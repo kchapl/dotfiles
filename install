@@ -29,8 +29,8 @@ fi
 # 2. Define the packages you want to stow
 # Add or remove folder names here as your repository grows
 PACKAGES=(
-    "bash"
-    "nvim"
+    "shell"
+    "agents"
 )
 
 # 3. Stow the packages
@@ -39,7 +39,7 @@ for package in "${PACKAGES[@]}"; do
     if [ -d "$package" ]; then
         echo " -> Stowing $package..."
         # The -R option rests any broken links or updates changed structures
-        stow -R "$package"
+        stow -Rv "$package" -t ~
     else
         echo "⚠️  Warning: Folder '$package' not found in dotfiles directory. Skipping."
     fi
