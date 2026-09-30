@@ -114,6 +114,4 @@ fi
 eval "$(/home/kelvin/.local/bin/mise activate bash)"
 export PATH="$HOME/.local/bin:$PATH"
 
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-
 export PATH=~/.npm-global/bin:$PATH
