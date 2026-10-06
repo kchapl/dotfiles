@@ -1,0 +1,7 @@
+[user]
+	email = kchapl@users.noreply.github.com
+	name = kchapl
+[core]
+	editor = vi
+[init]
+	defaultBranch = main
