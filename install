@@ -46,4 +46,15 @@ for package in "${PACKAGES[@]}"; do
     fi
 done
 
+# 4. Check the skill inventory
+# Best-effort: reports drift but never blocks setup.
+echo "🔎 Checking the skill inventory..."
+if [ -x "$DOTFILES_DIR/check-skills" ]; then
+    if ! "$DOTFILES_DIR/check-skills"; then
+        echo "⚠️  Skill inventory drift detected above. Setup continues."
+    fi
+else
+    echo "⚠️  check-skills not found or not executable. Skipping."
+fi
+
 echo "🎉 Setup complete! Your configurations are linked."

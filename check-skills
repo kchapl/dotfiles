@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+#
+# check-skills - verify that .skills.lock and the skills tree agree.
+#
+# Every skill under agents/.agents/skills/ must have exactly one row in
+# .skills.lock, and every row must still have a directory on disk. Purely
+# local: no network, no Node.js, no npx.
+#
+# This cannot tell you whether a vendored skill is behind its upstream. That
+# needs a fetch, and is what `npx skills update` is for.
+#
+# Exit status: 0 in sync, 1 on drift, 2 on missing or malformed input.
+
+set -euo pipefail
+
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$DOTFILES_DIR"
+
+SKILLS_DIR="agents/.agents/skills"
+LOCK_FILE=".skills.lock"
+
+fail() {
+    echo "❌ $*" >&2
+    exit 2
+}
+
+indent() {
+    sed 's/^/   /'
+}
+
+[ -f "$LOCK_FILE" ] || fail "$LOCK_FILE not found."
+[ -d "$SKILLS_DIR" ] || fail "$SKILLS_DIR not found."
+
+tmpdir="$(mktemp -d)"
+trap 'rm -rf "$tmpdir"' EXIT
+
+# Rows are <name>\t<source>\t<upstream path>. '#' comments and blank lines are ignored.
+# Read the file directly so the reported line numbers match what an editor shows.
+malformed="$(awk -F'\t' '
+    /^[[:space:]]*#/ { next }
+    /^[[:space:]]*$/ { next }
+    NF != 3 { printf "   line %d: %s\n", NR, $0 }
+' "$LOCK_FILE")"
+[ -z "$malformed" ] || fail "$LOCK_FILE has rows without exactly 3 tab-separated fields:
+$malformed"
+
+rows="$(grep -v '^[[:space:]]*#' "$LOCK_FILE" | grep -v '^[[:space:]]*$' || true)"
+
+if [ -n "$rows" ]; then
+    printf '%s\n' "$rows" | cut -f1 | sort > "$tmpdir/listed"
+else
+    : > "$tmpdir/listed"
+fi
+find "$SKILLS_DIR" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort > "$tmpdir/present"
+
+dupes="$(uniq -d "$tmpdir/listed" | indent)"
+[ -z "$dupes" ] || fail "$LOCK_FILE lists the same skill twice:
+$dupes"
+
+unrecorded="$(comm -13 "$tmpdir/listed" "$tmpdir/present")"
+missing="$(comm -23 "$tmpdir/listed" "$tmpdir/present")"
+
+status=0
+
+if [ -n "$unrecorded" ]; then
+    echo "❌ Present in $SKILLS_DIR but not in $LOCK_FILE:"
+    printf '%s\n' "$unrecorded" | indent
+    echo "   Vendored?  append \"<name>\t<owner/repo>\t<upstream path>\""
+    echo "   Authored?  append \"<name>\tauthored\t-\""
+    status=1
+fi
+
+if [ -n "$missing" ]; then
+    echo "❌ Listed in $LOCK_FILE but missing from $SKILLS_DIR:"
+    printf '%s\n' "$missing" | indent
+    status=1
+fi
+
+if [ "$status" -eq 0 ]; then
+    total="$(wc -l < "$tmpdir/present" | tr -d ' ')"
+    if [ -n "$rows" ]; then
+        vendored="$(printf '%s\n' "$rows" | awk -F'\t' '$2 != "authored"' | wc -l | tr -d ' ')"
+    else
+        vendored=0
+    fi
+    echo "✅ Skills in sync: $total total, $vendored vendored, $((total - vendored)) authored."
+fi
+
+exit "$status"
