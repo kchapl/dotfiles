@@ -46,7 +46,19 @@ for package in "${PACKAGES[@]}"; do
     fi
 done
 
-# 4. Check the skill inventory
+# 4. Point this repository at the hooks it ships
+# core.hooksPath is repository-local, so the secrets guard applies to commits
+# made here and nowhere else.
+echo "🪝 Enabling the secrets pre-commit hook..."
+git -C "$DOTFILES_DIR" config core.hooksPath .githooks
+
+# 5. Remind the user about their machine-local secrets
+# Optional by design: ~/.bashrc sources it only when it exists.
+if [ ! -f "$HOME/.secrets" ]; then
+    echo "🔑 No ~/.secrets yet. Copy ~/.secrets.example to ~/.secrets to set credentials."
+fi
+
+# 6. Check the skill inventory
 # Best-effort: reports drift but never blocks setup.
 echo "🔎 Checking the skill inventory..."
 if [ -x "$DOTFILES_DIR/check-skills" ]; then

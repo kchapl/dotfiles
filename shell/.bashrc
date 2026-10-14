@@ -115,3 +115,9 @@ eval "$(/home/kelvin/.local/bin/mise activate bash)"
 export PATH="$HOME/.local/bin:$PATH"
 
 export PATH=~/.npm-global/bin:$PATH
+
+# Secrets are machine-local and deliberately kept out of this repository.
+# ~/.secrets is untracked; copy ~/.secrets.example to create it.
+if [ -f "$HOME/.secrets" ]; then
+    . "$HOME/.secrets"
+fi

@@ -1,0 +1,16 @@
+# Secret material stays outside this repository, in ~/.secrets. These patterns
+# are a second line of defence behind .githooks/pre-commit, for the case where a
+# secrets file is copied into the working tree.
+.secrets
+*.secret
+*.secrets
+*.pem
+*.p12
+*.pfx
+.env
+.env.*
+!*.env.example
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519

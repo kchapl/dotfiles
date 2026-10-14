@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+#
+# pre-commit - refuse to commit anything that looks like a secret.
+#
+# This repository is public, so a stray `export TOKEN=...` in a tracked file is
+# the failure worth blocking. Only staged additions are inspected, so deleting a
+# secret in a commit is never flagged.
+#
+# Enabled per-repository, because that is the scope the guard is meant to have:
+#
+#     git config core.hooksPath .githooks
+#
+# `install` does this for you. A deliberate bypass is `git commit --no-verify`.
+#
+# Exit status: 0 clean, 1 something secret-shaped is staged.
+
+set -uo pipefail
+
+# Names that should never be tracked, whatever they contain. Templates are
+# excluded further down.
+FILENAME_PATTERN='(^|/)\.?secrets?$|\.secrets?$|(^|/)\.env$|(^|/)\.env\.[A-Za-z0-9_-]+$|\.pem$|\.p12$|\.pfx$|(^|/)id_(rsa|dsa|ecdsa|ed25519)$'
+
+# Value shapes that identify a credential rather than an env var reference.
+# One pattern per line; `paste` joins them with `|` into a single ERE.
+CONTENT_PATTERN="$(cat <<'PATTERN' | paste -sd '|' -
+-----BEGIN [A-Z ]*PRIVATE KEY-----
+AKIA[0-9A-Z]{16}
+ASIA[0-9A-Z]{16}
+gh[pousr]_[A-Za-z0-9]{36}
+github_pat_[A-Za-z0-9_]{22,}
+xox[abprs]-[A-Za-z0-9-]{10,}
+sk_live_[A-Za-z0-9]{16,}
+rk_live_[A-Za-z0-9]{16,}
+sk-ant-[A-Za-z0-9_-]{20,}
+rnd_[A-Za-z0-9]{20,}
+AIza[0-9A-Za-z_-]{35}
+eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.
+(api[_-]?key|apikey|secret|token|password|passwd|credential)s?["']?[[:space:]]*[:=][[:space:]]*["']?[A-Za-z0-9/+_-]{16,}
+PATTERN
+)"
+
+# A name that documents the format rather than carrying a value.
+is_template() {
+    case "$1" in
+        *.example | *.sample | *.template) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+staged_files() {
+    git diff --cached --name-only --diff-filter=ACMR
+}
+
+status=0
+
+while IFS= read -r file; do
+    [ -n "$file" ] || continue
+
+    if ! is_template "$file" && printf '%s\n' "$file" | grep -Eqi -e "$FILENAME_PATTERN"; then
+        printf '❌ %s is a secret-bearing filename.\n' "$file" >&2
+        status=1
+    fi
+
+    hits="$(git diff --cached --no-color --unified=0 --diff-filter=ACMR -- "$file" |
+        awk '/^\+\+\+ / { next } /^\+/ { sub(/^\+/, ""); print }' |
+        grep -Ei -e "$CONTENT_PATTERN" || true)"
+
+    if [ -n "$hits" ]; then
+        printf '❌ %s adds a line that looks like a secret:\n' "$file" >&2
+        printf '%s\n' "$hits" | sed 's/^/     /' >&2
+        status=1
+    fi
+done < <(staged_files)
+
+if [ "$status" -ne 0 ]; then
+    cat >&2 <<'EOF'
+
+Secrets do not belong in this repository. Put them in ~/.secrets, which
+~/.bashrc sources and git never tracks - copy ~/.secrets.example to start.
+If this is a false positive, reword the line or commit with --no-verify.
+EOF
+fi
+
+exit "$status"
