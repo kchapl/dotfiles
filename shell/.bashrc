@@ -121,3 +121,6 @@ export PATH=~/.npm-global/bin:$PATH
 if [ -f "$HOME/.secrets" ]; then
     . "$HOME/.secrets"
 fi
+
+# Entire CLI shell completion
+source <(entire completion bash)
