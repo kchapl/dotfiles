@@ -46,11 +46,18 @@ for package in "${PACKAGES[@]}"; do
     fi
 done
 
-# 4. Link agent skills to Antigravity global configuration
-if [ -d "$HOME/.agents/skills" ]; then
-    echo "🤖 Linking agent skills to Antigravity global configuration..."
+# 4. Link agent skills and MCP config to Antigravity global configuration
+# Both are aliases of the stowed copies in ~/.agents, so the global config
+# directory follows this repository without a second place to edit.
+if [ -d "$HOME/.agents/skills" ] || [ -f "$HOME/.agents/mcp.json" ]; then
+    echo "🤖 Linking agent configuration to Antigravity global configuration..."
     mkdir -p "$HOME/.gemini/config"
+fi
+if [ -d "$HOME/.agents/skills" ]; then
     ln -sfn "$HOME/.agents/skills" "$HOME/.gemini/config/skills"
+fi
+if [ -f "$HOME/.agents/mcp.json" ]; then
+    ln -sfn "$HOME/.agents/mcp.json" "$HOME/.gemini/config/mcp_config.json"
 fi
 
 # 5. Point this repository at the hooks it ships
