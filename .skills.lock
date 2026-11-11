@@ -2,6 +2,7 @@
 # source is owner/repo for vendored skills, or 'authored' for skills written here.
 # Vendored rows are recorded from ~/.agents/.skill-lock.json when a skill is installed.
 agent-browser	vercel-labs/agent-browser	skills/agent-browser/SKILL.md
+chief-of-staff	mattpocock/skills	skills/in-progress/chief-of-staff/SKILL.md
 code-review	mattpocock/skills	skills/engineering/code-review/SKILL.md
 codebase-design	mattpocock/skills	skills/engineering/codebase-design/SKILL.md
 diagnosing-bugs	mattpocock/skills	skills/engineering/diagnosing-bugs/SKILL.md
@@ -12,15 +13,24 @@ frontend-design	anthropics/skills	skills/frontend-design/SKILL.md
 grill-me	mattpocock/skills	skills/productivity/grill-me/SKILL.md
 grill-with-docs	mattpocock/skills	skills/engineering/grill-with-docs/SKILL.md
 grilling	mattpocock/skills	skills/productivity/grilling/SKILL.md
+handoff	mattpocock/skills	skills/productivity/handoff/SKILL.md
 implement	mattpocock/skills	skills/engineering/implement/SKILL.md
+implement-spec	mattpocock/skills	skills/engineering/implement-spec/SKILL.md
 improve-codebase-architecture	mattpocock/skills	skills/engineering/improve-codebase-architecture/SKILL.md
+pr	mattpocock/skills	skills/engineering/pr/SKILL.md
 prototype	mattpocock/skills	skills/engineering/prototype/SKILL.md
 research	mattpocock/skills	skills/engineering/research/SKILL.md
+retro	mattpocock/skills	skills/engineering/retro/SKILL.md
 setup-matt-pocock-skills	mattpocock/skills	skills/engineering/setup-matt-pocock-skills/SKILL.md
+setup-pre-commit	mattpocock/skills	skills/misc/setup-pre-commit/SKILL.md
 tdd	mattpocock/skills	skills/engineering/tdd/SKILL.md
 to-spec	mattpocock/skills	skills/engineering/to-spec/SKILL.md
 to-tickets	mattpocock/skills	skills/engineering/to-tickets/SKILL.md
 triage	mattpocock/skills	skills/engineering/triage/SKILL.md
 vercel-react-best-practices	vercel-labs/agent-skills	skills/react-best-practices/SKILL.md
+wait-what	mattpocock/skills	skills/productivity/wait-what/SKILL.md
 wayfinder	mattpocock/skills	skills/engineering/wayfinder/SKILL.md
+writing-beats	mattpocock/skills	skills/in-progress/writing-beats/SKILL.md
 writing-for-agents	mattpocock/skills	skills/productivity/writing-for-agents/SKILL.md
+writing-fragments	mattpocock/skills	skills/in-progress/writing-fragments/SKILL.md
+writing-shape	mattpocock/skills	skills/in-progress/writing-shape/SKILL.md
